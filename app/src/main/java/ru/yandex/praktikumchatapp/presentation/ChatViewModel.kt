@@ -1,6 +1,5 @@
 package ru.yandex.praktikumchatapp.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,12 +7,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.yandex.praktikumchatapp.data.ChatRepository
+import ru.yandex.praktikumchatapp.utils.Logger
 
 class ChatViewModel(
     val isWithReplies: Boolean = true
 ) : ViewModel() {
 
-    private val repository = ChatRepository()
+    private val logger = Logger()
+    private val repository = ChatRepository(logger = logger)
 
     // [Задание 1] замена на Flow
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
@@ -45,6 +46,6 @@ class ChatViewModel(
      */
     private fun updateState(message: Message) {
         _messages.update { it + message }
-        Log.i("ChatViewModel", "updateState with $message. Result: ${_messages.value.joinToString()}~")
+        logger.i("ChatViewModel", "updateState with $message. Result: ${_messages.value.joinToString()}~")
     }
 }
