@@ -1,6 +1,7 @@
 package ru.yandex.praktikumchatapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,13 +26,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -72,9 +77,17 @@ fun ChatScreen(
     modifier: Modifier = Modifier
 ) {
     val viewModel = remember { ChatViewModel() }
-    val messagesList by viewModel.messages.collectAsState()  // [Задание 1] замена на collectAsState
+    val chatState by viewModel.state.collectAsState()       // [Задание 1] замена на collectAsState, [Задание 4] messages и shouldShowKeyboard на chatState
+    val focusRequester = remember { FocusRequester() }      // [Задание 3] добавьте focusRequester
+    val keyboardController = LocalSoftwareKeyboardController.current
     val messageText = remember { mutableStateOf("") }
-    // TODO Задание 3: добавьте focusRequester
+
+    LaunchedEffect(chatState) {
+        if (chatState.shouldShowKeyboard) {
+            Log.d("ChatScreen", "request focus")
+            focusRequester.requestFocus()
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
 
@@ -84,7 +97,7 @@ fun ChatScreen(
                 .weight(1f)
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp)
         ) {
-            items(messagesList) { message ->
+            items(chatState.messages) { message ->
                 when (message) {
                     is Message.MyMessage -> MyMessageCard(message)
                     is Message.OtherMessage -> OtherMessageCard(message)
@@ -96,7 +109,7 @@ fun ChatScreen(
         Row(
             modifier = Modifier
                 .padding(16.dp)
-                // TODO Задание 3: добавьте focusRequester
+                .focusRequester(focusRequester) // [Задание 3] добавьте focusRequester
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -116,6 +129,9 @@ fun ChatScreen(
                         if (messageText.value.isNotBlank()) {
                             viewModel.sendMyMessage(messageText.value)
                             messageText.value = ""
+                            Log.d("ChatScreen", "free focus")
+                            keyboardController?.hide()
+                            focusRequester.freeFocus()      // [Задание 3] отдаем фокус
                         }
                     }
                 )
@@ -126,6 +142,9 @@ fun ChatScreen(
                     if (messageText.value.isNotBlank()) {
                         viewModel.sendMyMessage(messageText.value)
                         messageText.value = ""
+                        Log.d("ChatScreen", "free focus")
+                        keyboardController?.hide()
+                        focusRequester.freeFocus()      // [Задание 3] отдаем фокус
                     }
                 }
             ) {
