@@ -1,7 +1,6 @@
 package ru.yandex.praktikumchatapp
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -84,7 +83,6 @@ fun ChatScreen(
 
     LaunchedEffect(chatState) {
         if (chatState.shouldShowKeyboard) {
-            Log.d("ChatScreen", "request focus")
             focusRequester.requestFocus()
         }
     }
@@ -129,7 +127,6 @@ fun ChatScreen(
                         if (messageText.value.isNotBlank()) {
                             viewModel.sendMyMessage(messageText.value)
                             messageText.value = ""
-                            Log.d("ChatScreen", "free focus")
                             keyboardController?.hide()
                             focusRequester.freeFocus()      // [Задание 3] отдаем фокус
                         }
@@ -142,7 +139,6 @@ fun ChatScreen(
                     if (messageText.value.isNotBlank()) {
                         viewModel.sendMyMessage(messageText.value)
                         messageText.value = ""
-                        Log.d("ChatScreen", "free focus")
                         keyboardController?.hide()
                         focusRequester.freeFocus()      // [Задание 3] отдаем фокус
                     }
