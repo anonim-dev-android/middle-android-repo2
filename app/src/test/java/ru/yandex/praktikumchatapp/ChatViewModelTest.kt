@@ -1,3 +1,4 @@
+import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -8,8 +9,11 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
+import ru.yandex.praktikumchatapp.presentation.ChatState
 import ru.yandex.praktikumchatapp.presentation.ChatViewModel
 import ru.yandex.praktikumchatapp.presentation.Message
+import ru.yandex.praktikumchatapp.utils.Logger
 
 @ExperimentalCoroutinesApi
 class ChatViewModelTest {
@@ -17,11 +21,12 @@ class ChatViewModelTest {
     private var testDispatcher: TestDispatcher = StandardTestDispatcher()
 
     private lateinit var viewModel: ChatViewModel
+    private val logger = mock<Logger>()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = ChatViewModel(isWithReplies = false)
+        viewModel = ChatViewModel(isWithReplies = false, logger)
     }
 
     @After
@@ -33,7 +38,14 @@ class ChatViewModelTest {
     fun `send message should update state with MyMessage`() = runTest {
         val message = Message.MyMessage("TestMessage")
 
-        // TODO Задание 5: допишите юнит-тест
+        // [Задание 5] допишите юнит-тест
+        viewModel.sendMyMessage(message.text)
+        viewModel.state.test {
+            val actual = awaitItem()
+            val expect = ChatState(messages = listOf(message), false)
+            assert(expect == actual)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
