@@ -1,8 +1,12 @@
 import app.cash.turbine.test
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -52,6 +56,19 @@ class ChatViewModelTest {
     fun testReceiveMessage_concurrentMessages() = runTest {
         val messagesToSend = (1..100).map { Message.MyMessage("Message $it") }
 
-        // TODO Задание 6: допишите юнит-тест
+        // [Задание 6] допишите юнит-тест
+        messagesToSend.map { msg ->
+            CoroutineScope(testDispatcher).launch {
+                viewModel.sendMyMessage(msg.text)
+            }
+        }.joinAll()
+        advanceUntilIdle()
+
+        viewModel.state.test {
+            val actual = awaitItem()
+            val expect = ChatState(messagesToSend, false)
+            assert(expect == actual)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }
